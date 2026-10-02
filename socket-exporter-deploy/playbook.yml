@@ -1,0 +1,6 @@
+---
+- name: Deploy Prometheus Socket Exporter
+  hosts: servers
+  become: true
+  roles:
+    - socket_exporter

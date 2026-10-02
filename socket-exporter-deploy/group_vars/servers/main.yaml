@@ -1,0 +1,8 @@
+---
+# Целевой хост и порт для проверки
+ansible_user: ""
+ansible_ssh_private_key_file: ""
+socket_exporter_target_host: "127.0.0.1"
+socket_exporter_target_port: 22
+socket_exporter_listen_port: 9100
+socket_exporter_user: "socket_exporter"

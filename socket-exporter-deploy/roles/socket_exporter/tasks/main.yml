@@ -1,0 +1,74 @@
+---
+- name: Bootstrap python3-apt for Ansible apt module
+  raw: test -e /usr/bin/python3 || (apt -y update && apt-get install -y python3 python3-apt)
+  changed_when: false
+
+- name: Install system dependencies (Python3 and venv)
+  apt:
+    name:
+      - python3
+      - python3-venv
+      - python3-pip
+    state: present
+    update_cache: yes
+
+- name: Create dedicated system user for the exporter
+  user:
+    name: "{{ socket_exporter_user }}"
+    system: yes
+    shell: /usr/sbin/nologin
+    create_home: no
+
+- name: Create application and configuration directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ socket_exporter_user }}"
+    group: "{{ socket_exporter_user }}"
+    mode: '0755'
+  loop:
+    - "{{ socket_exporter_dir }}"
+    - "{{ socket_exporter_conf_dir }}"
+
+- name: Copy Python exporter script
+  copy:
+    src: exporter.py
+    dest: "{{ socket_exporter_dir }}/exporter.py"
+    owner: "{{ socket_exporter_user }}"
+    group: "{{ socket_exporter_user }}"
+    mode: '0755'
+
+- name: Create Python virtual environment
+  command: python3 -m venv {{ socket_exporter_dir }}/venv
+  args:
+    creates: "{{ socket_exporter_dir }}/venv/bin/python"
+
+- name: Install prometheus_client library in virtual environment
+  pip:
+    name: prometheus_client
+    virtualenv: "{{ socket_exporter_dir }}/venv"
+
+- name: Deploy environment configuration file
+  template:
+    src: socket_exporter.env.j2
+    dest: "{{ socket_exporter_conf_dir }}/socket_exporter.env"
+    owner: "{{ socket_exporter_user }}"
+    group: "{{ socket_exporter_user }}"
+    mode: '0640'
+  notify: Restart socket exporter
+
+- name: Deploy systemd service unit
+  template:
+    src: socket_exporter.service.j2
+    dest: /etc/systemd/system/socket_exporter.service
+    mode: '0644'
+  notify:
+    - Reload systemd daemon
+    - Restart socket exporter
+
+- name: Enable and start the systemd service
+  systemd:
+    name: socket_exporter
+    enabled: yes
+    state: started
+    daemon_reload: yes

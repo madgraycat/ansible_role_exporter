@@ -1,0 +1,14 @@
+---
+# Целевой хост и порт для проверки
+socket_exporter_target_host: "127.0.0.1"
+socket_exporter_target_port: 22
+
+# Настройки самого экспортера
+socket_exporter_listen_port: 9100
+socket_exporter_check_interval: 15 # Интервал проверки в секундах
+
+# Пользователь и пути
+socket_exporter_user: "socket_exporter"
+socket_exporter_dir: "/opt/socket_exporter"
+socket_exporter_conf_dir: "/etc/socket_exporter"
+

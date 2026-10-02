@@ -1,0 +1,9 @@
+---
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Restart socket exporter
+  systemd:
+    name: socket_exporter
+    state: restarted
