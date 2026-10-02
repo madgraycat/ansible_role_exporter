@@ -1,0 +1,28 @@
+[Unit]
+Description=Prometheus TCP Socket Exporter
+After=network.target
+
+[Service]
+Type=simple
+User={{ socket_exporter_user }}
+Group={{ socket_exporter_user }}
+
+EnvironmentFile={{ socket_exporter_conf_dir }}/socket_exporter.env
+
+ExecStart={{ socket_exporter_dir }}/venv/bin/python {{ socket_exporter_dir }}/exporter.py
+WorkingDirectory={{ socket_exporter_dir }}
+
+Restart=always
+RestartSec=5
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=socket_exporter
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths={{ socket_exporter_dir }}
+
+[Install]
+WantedBy=multi-user.target
